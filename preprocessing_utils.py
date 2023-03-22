@@ -4,11 +4,11 @@ import pandas as pd
 def labelling(df):
    df["temp"] =  (df["Adj Close"].shift(-1) / df["Adj Close"] ) - 1
 
-   df["label"] = 0
+   df["label"] = -1
    df.loc[df["temp"] > 0.55/100, "label"] = 1
-   df.loc[df["temp"] < -0.50/100, "label"] = -1
+   df.loc[df["temp"] < -0.50/100, "label"] = 0
     
-   df.drop(df[df["label"] == 0].index, inplace= True)
+   df.drop(df[df["label"] == -1].index, inplace= True)
    del df["temp"]
 
 def generate_sequences(df, features_columns, T):

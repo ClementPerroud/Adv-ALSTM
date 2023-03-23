@@ -21,8 +21,6 @@ More details of my version below.
 
 I finally updated the author's code for it to run with TensorFlow 2.x and compare my results with his. The updated code is available in the folder ```original_code_updated``` .
 ```
-│   .gitignore
-│   README.md
 │   AdvALSTM.py
 │   preprocessing.py
 │   replicate_result.py

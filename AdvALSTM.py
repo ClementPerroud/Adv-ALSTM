@@ -2,9 +2,8 @@ import tensorflow as tf
 from keras.engine import data_adapter
 
 def hinge_acc(y_true, y_pred):
-    y_pred = tf.math.sign(y_pred)
     return tf.keras.metrics.binary_accuracy(
-        (y_true + 1)/2, (y_pred + 1) / 2
+        y_true, y_pred, threshold= 0
     )
 
 class TemporalAttention(tf.keras.layers.Layer):
@@ -16,17 +15,20 @@ class TemporalAttention(tf.keras.layers.Layer):
         self.av_W = self.add_weight(
             name='att_W', dtype=tf.float32,
             shape=[self.units, self.units],
-            initializer="glorot_uniform"
+            initializer="glorot_uniform",
+            trainable= True
         )
         self.av_b = self.add_weight(
             name='att_h', dtype=tf.float32,
             shape=[self.units],
-            initializer="zeros"
+            initializer="zeros",
+            trainable= True
         )
         self.av_u = self.add_weight(
             name='att_u', dtype=tf.float32,
             shape=[self.units],
-            initializer="glorot_uniform"
+            initializer="glorot_uniform",
+            trainable= True
         )
         super().build(input_shape)
     def call(self, h):
@@ -47,32 +49,35 @@ class TemporalAttention(tf.keras.layers.Layer):
         return fea_con
     
 class AdvALSTM(tf.keras.models.Model):
-    def __init__(self, units, epsilon, beta, learning_rate = 1E-2, l2 = None, attention = True, hinge = True, adversarial_training = True):
+    def __init__(self, units, epsilon = 1E-3, beta =  5E-2, learning_rate = 1E-2, dropout = None, l2 = None, attention = True, hinge = True, adversarial_training = True, random_perturbations = False):
         super().__init__()
-        self.epsilon = epsilon
-        self.beta = beta
+        self.epsilon = tf.constant(epsilon)
+        self.beta = tf.constant(beta)
         self.hinge = hinge
         self.adversarial_training = adversarial_training
+        self.random_perbutations = random_perturbations
+        
         
         if attention:
             self.model_latent_rep = tf.keras.models.Sequential([
                 tf.keras.layers.Dense(units, activation = "tanh"),
-                tf.keras.layers.LSTM(units, return_sequences = True),
-                TemporalAttention(units),
+                tf.keras.layers.Dropout(dropout), 
+                tf.keras.layers.LSTM(units, return_sequences = True, dropout = dropout),
+                TemporalAttention(units)
             ])
         else:
             self.model_latent_rep = tf.keras.models.Sequential([
                 tf.keras.layers.Dense(units, activation = "tanh"),
-                tf.keras.layers.LSTM(units, return_sequences = False),
+                tf.keras.layers.Dropout(dropout),
+                tf.keras.layers.LSTM(units, return_sequences = False, dropout = dropout),
             ])
-        
         self.model_prediction = tf.keras.models.Sequential([
             tf.keras.layers.Dense(1, activation=None if hinge else "sigmoid",
                 kernel_regularizer = tf.keras.regularizers.L2(l2),
                 bias_regularizer = tf.keras.regularizers.L2(l2))
         ])
         
-
+        
         self.compile(
             loss = "hinge" if hinge else "binary_crossentropy",
             optimizer = tf.keras.optimizers.Adam(learning_rate),
@@ -84,49 +89,32 @@ class AdvALSTM(tf.keras.models.Model):
         x = self.model_prediction(x)
         return x
     
-    @tf.function
-    def get_perturbation(self, e, y, sample_weight):
-        y_pred = self.model_prediction(e, training = True)
-        loss = self.compiled_loss(y, y_pred, sample_weight, regularization_losses=None)
-        perturbations = tf.gradients(loss, [e])[0]
-        tf.stop_gradient(perturbations)
-        perturbations = perturbations / tf.norm(perturbations, ord='euclidean', axis=-1, keepdims = True)
-        return perturbations
-        
     def train_step(self, data):
         x, y, sample_weight = data_adapter.unpack_x_y_sample_weight(data)
-        # Run forward pass.
-        with tf.GradientTape(persistent = True) as tape:
+
+        with tf.GradientTape() as tape:
             e = self.model_latent_rep(x, training=True)
+            with tf.GradientTape(watch_accessed_variables = False) as tape_pertubations:
+                tape_pertubations.watch(e)
+                y_pred = self.model_prediction(e, training = True)
+                loss = self.compiled_loss(y, y_pred, sample_weight)
+
             
-            y_pred = self.model_prediction(e, training = True)
-            loss = self.compiled_loss(y, y_pred, sample_weight, regularization_losses=None)
-            
-            with tape.stop_recording():
-                perturbations = tape.gradient(loss, e)#self.get_perturbation(e, y, sample_weight)
-            
-            perturbations = perturbations / tf.norm(perturbations, ord='euclidean', axis=-1, keepdims = True)
-                
             if self.adversarial_training:
-                 # Normalize
-                e_adv = e + self.epsilon* perturbations
+                with tape.stop_recording():
+                    if self.random_perbutations:
+                        perturbations = tf.random.normal(shape=tf.shape(e))
+                    else:
+                        perturbations = tf.math.sign(tape_pertubations.gradient(loss, e))
+                    tf.stop_gradient(perturbations)
+
+                
+                e_adv = e + self.epsilon * tf.norm(e, ord = "euclidean", axis= -1, keepdims = True) * tf.math.l2_normalize(perturbations, axis = -1, epsilon=1e-8)
                 y_pred_adv = self.model_prediction(e_adv, training = True)
 
-                loss += self.beta*self.compiled_loss(y, y_pred_adv, sample_weight, regularization_losses=None) + tf.add_n(self.losses)
-        
-        self.optimizer.minimize(loss, self.trainable_variables, tape=tape)
-        del tape
-        return self.compute_metrics(x, y, y_pred, sample_weight)
-    
-    def fit(self, *args, **kwargs):
-        if self.hinge:
-            args = list(args)
-            if len(args) > 1:
-                args[1] = args[1]*2 - 1
-            elif "y" in kwargs.keys():
-                kwargs['y'] = kwargs['y']*2 - 1
+                adv_loss = self.compiled_loss(y, y_pred_adv, sample_weight)
+                loss += self.beta*adv_loss + tf.add_n(self.losses)
 
-            if "validation_data" in kwargs.keys():
-                kwargs['validation_data'] = (kwargs['validation_data'][0], kwargs['validation_data'][1]*2 -1)
-        super().fit(*args, **kwargs)
+        self.optimizer.minimize(loss, self.trainable_variables, tape=tape)
+        return self.compute_metrics(x, y, y_pred, sample_weight)
         

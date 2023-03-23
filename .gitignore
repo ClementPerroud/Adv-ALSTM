@@ -1,4 +1,9 @@
 *.zip
+*.npz
+
 __pycache__
 .ipynb_checkpoints
-test
+tmp
+logs
+
+

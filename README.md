@@ -97,45 +97,24 @@ __init__(self, units, epsilon = 1E-3, beta =  5E-2, learning_rate = 1E-2, dropou
   Specify the number of units of the layers (Dense, LSTM and Temporal Attention) contained in the model.
 
 - **epsilon** : float (optional, default : 1E-3)
-- **beta** : float (optional, default : 5E-2)
-
-  If ```adversarial_training = True``` : Espilon and beta are used in the adversiarial loss. **Espilon** define the perturbations l2 norm that are added in the formula that generate the Adversarial Examples :
-
+- **beta** : float (optional, default : 5E-2). If ```adversarial_training = True``` : Espilon and beta are used in the adversiarial loss. **Espilon** define the perturbations l2 norm that are added in the formula that generate the Adversarial Examples :
 
   <img alt="Formula e_adv" src="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/e_adv.JPG?raw=true" height = "30"/>
 
-
   <img alt="Formula r_adv" src="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/r_adv.JPG?raw=true" height = "30"/>
 
-**Beta** is then use to weight the Adversarial loss generated with the Adversarial example following the formule bellow :
+  **Beta** is then use to weight the Adversarial loss generated with the Adversarial example following the formule bellow :
 
   <img alt="Formula general loss" src ="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/global_loss.JPG?raw=true" height = "55"/>
 
 
 
-- **learning_rate** : float (optional, default : 1E-2)
-
-  Define the learning rate used to initialized the Adam optimzer used for training.
-- **dropout** : float (optional, default : 0.0)
-- **l2** : float (optional, default : 1E-2)
-
-  Define l2 regularization parameter
-- **attention** : boolean (optional, default : True)
-
-  If ```True```, the model will use the TemporalAttention after the LSTM layer to generate the Latent Space. If ```False```, the model will simply take the last hidden state of the LSTM (use ```return_sequences = False```)
-- **hinge** : boolean (optional, default : True)
-  If ```True```, the model will use the Hinge loss to perform training. If ```False```, the model use the Binary Cross-Entropy loss.
-- **adversarial_training** : boolean (optional, default : True)
-
-  If ```True```, the model will generate a Adversarial Loss from the Adversarial exemple that will be added to the global loss. If ```False```, the model will be training without adversarial example and loss.
-- **random_perturbations** : boolean (optional, default : False)
-  Define how the perturbations are created.
-  If ```False``` (default), the perturbations are generated following the papier guidline with :
-
+- **learning_rate** : float (optional, default : 1E-2). Define the learning rate used to initialized the Adam optimzer used for training.
+- **dropout** : float (optional, default : 0.0).
+- **l2** : float (optional, default : 1E-2). Define l2 regularization parameter
+- **attention** : boolean (optional, default : True). If ```True```, the model will use the TemporalAttention after the LSTM layer to generate the Latent Space. If ```False```, the model will simply take the last hidden state of the LSTM (use ```return_sequences = False```)
+- **hinge** : boolean (optional, default : True). If ```True```, the model will use the Hinge loss to perform training. If ```False```, the model use the Binary Cross-Entropy loss.
+- **adversarial_training** : boolean (optional, default : True). If ```True```, the model will generate a Adversarial Loss from the Adversarial exemple that will be added to the global loss. If ```False```, the model will be training without adversarial example and loss.
+- **random_perturbations** : boolean (optional, default : False). Define how the perturbations are created. If ```False``` (default), the perturbations are generated following the papier guidline with :
   <img alt="Formula g_s gradient" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/g_s.JPG?raw=true" height = "30" />
-
-  ```g``` is computed with ```tape.gradient(loss(y, y_pred), e)```
-
-  If ```True```, the pertubations are randomly generated instead of being gradient oriented.
-
-  ```g``` is computed with ```tf.random.normal(...)```
+  ```g``` is computed with ```tape.gradient(loss(y, y_pred), e)```. If ```True```, the pertubations are randomly generated instead of being gradient oriented. ```g``` is computed with ```tf.random.normal(...)```

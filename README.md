@@ -102,14 +102,14 @@ __init__(self, units, epsilon = 1E-3, beta =  5E-2, learning_rate = 1E-2, dropou
   If ```adversarial_training = True``` : Espilon and beta are used in the adversiarial loss. **Espilon** define the perturbations l2 norm that are added in the formula that generate the Adversarial Examples :
 
 
-  ![Formula e_adv](https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/e_adv.JPG?raw=true)
+  <img alt="Formula e_adv" src="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/e_adv.JPG?raw=true" height = "30"/>
 
 
-  ![Formula r_adv](https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/r_adv.JPG?raw=true)
+  <img alt="Formula r_adv" src="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/r_adv.JPG?raw=true" height = "30"/>
 
 **Beta** is then use to weight the Adversarial loss generated with the Adversarial example following the formule bellow :
 
-  ![Formula general loss](https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/global_loss.JPG?raw=true)
+  <img alt="Formula general loss" src ="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/global_loss.JPG?raw=true" height = "55"/>
 
 
 
@@ -132,7 +132,7 @@ __init__(self, units, epsilon = 1E-3, beta =  5E-2, learning_rate = 1E-2, dropou
   Define how the perturbations are created.
   If ```False``` (default), the perturbations are generated following the papier guidline with :
 
-  ![Formula g_s gradient](https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/g_s.JPG?raw=true)
+  <img alt="Formula g_s gradient" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/g_s.JPG?raw=true" height = "30" />
 
   ```g``` is computed with ```tape.gradient(loss(y, y_pred), e)```
 

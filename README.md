@@ -1,22 +1,18 @@
 # Adv-ALSTM
-An attempt to replicate Adv-ASLTM model with Tensorflow 2 from papier :
-
-@article{feng2019enhancing,
-  title={Enhancing Stock Movement Prediction with Adversarial Training},
-  author={Feng, Fuli and Chen, Huimin and He, Xiangnan and Ding, Ji and Sun, Maosong and Chua, Tat-Seng},
-  journal={IJCAI},
-  year={2019}
-}
+An attempt to replicate Adv-ASLTM model with Tensorflow 2 from paper "Enhancing Stock Movement Prediction with Adversarial Training" (IJCAI, 2019). [Original Paper](https://arxiv.org/pdf/1810.09936.pdf) and [author github repo](https://github.com/fulifeng/Adv-ALSTM)
 
 This model can be use for Binary Classification tasks and will be used bellow as a stock movement classifier (UP/DOWN).
 
 ## Table of content
-- Getting started
-  - Description
-  - Dependencies
-- How to use the Adv-ASLTM model?
-  - Installation
-  - Use
+- [Getting started](#getting-started)
+  - [Description](#description)
+  - [Dependencies](#dependancies)
+- [How to use the Adv-ASLTM model?](#how-to-use-the-adv-asltm-model)
+  - [Installation](#installation)
+  - [Use](#use)
+  - [Documentation](#documentation)
+  - [Model description](#model-description)
+- Reproduce Results from paper (Coming soon)
 
 ## Getting started
 ### Description
@@ -97,7 +93,7 @@ __init__(self, units, epsilon = 1E-3, beta =  5E-2, learning_rate = 1E-2, dropou
   Specify the number of units of the layers (Dense, LSTM and Temporal Attention) contained in the model.
 
 - **epsilon** : float (optional, default : 1E-3)
-- **beta** : float (optional, default : 5E-2). If ```adversarial_training = True``` : Espilon and beta are used in the adversiarial loss. **Espilon** define the perturbations l2 norm that are added in the formula that generate the Adversarial Examples :
+- **beta** : float (optional, default : 5E-2). If ```adversarial_training = True``` : Espilon and beta are used in the adversiarial loss. **Espilon** define the l2 norm of the perturbations that used to generate the Adversarial Examples :
 
   <img alt="Formula e_adv" src="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/e_adv.JPG?raw=true" height = "30"/>
 
@@ -118,3 +114,32 @@ __init__(self, units, epsilon = 1E-3, beta =  5E-2, learning_rate = 1E-2, dropou
 - **random_perturbations** : boolean (optional, default : False). Define how the perturbations are created. If ```False``` (default), the perturbations are generated following the papier guidline with :
   <img alt="Formula g_s gradient" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/g_s.JPG?raw=true" height = "30" />
   ```g``` is computed with ```tape.gradient(loss(y, y_pred), e)```. If ```True```, the pertubations are randomly generated instead of being gradient oriented. ```g``` is computed with ```tf.random.normal(...)```
+
+### Model description
+
+<img alt="Formula g_s gradient" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/adv_lstm.JPG?raw=true" height = "30" />
+
+The **Adversarial Attentive LSTM** is based on a *Attentive LSTM* is used to generate a *latent space vector* that is used as a 1D-representation of a 2D-input sequence (here, the last *T* technical indicators of a given stock).
+
+This Attentive LSTM use a Temporal Attention Layer that "summurize" the hidden states of the LSTM following the temporal importance detected by the Neural Network. This layer keeps the last hidden states and append it to the attentive output.
+
+
+<img alt="Formula g_s gradient" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/adv_lstm.JPG?raw=true" height = "30" />
+
+Following the Attentive LSTM, we get *$e^s$* the latent space representation of the input sequence.
+
+We pass it through the classifier to get *$\hat{y}^s$* which it then used to calculate the first loss. 
+
+This first loss is derived with respect to *$e^s$*. This give the "direction" to follow to maximize the loss by adding pertubations. We use this derivative to calculate $e_{adv}^{s}$, the Adversarial Example :
+
+
+<img alt="Formula e_adv" src="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/e_adv.JPG?raw=true" height = "30"/>
+
+<img alt="Formula r_adv" src="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/g_s.JPG?raw=true" height = "30"/>
+
+This Adversarial Example is then passed to the classifier to recieve a second loss (Adversarial Loss) as bellow : 
+
+<img alt="Formula general loss" src ="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/global_loss_description.JPG?raw=true" height = "70"/>
+
+
+With $\beta$ used to weight to adversarial loss.

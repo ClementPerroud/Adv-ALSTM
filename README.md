@@ -1,4 +1,4 @@
-# Adv-ALSTM
+# Adv-ALSTM : Adversarial Training Attentive LSTM
 An attempt to replicate Adv-ASLTM model with Tensorflow 2 from paper "Enhancing Stock Movement Prediction with Adversarial Training" (IJCAI, 2019). [Original Paper](https://arxiv.org/pdf/1810.09936.pdf) and [author github repo](https://github.com/fulifeng/Adv-ALSTM)
 
 This model can be used for Binary Classification tasks and will be used below as a stock movement classifier (UP/DOWN).

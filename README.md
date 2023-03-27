@@ -140,4 +140,4 @@ This Adversarial Example is then passed to the classifier to receive a second lo
 <img alt="Formula general loss" src ="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/global_loss_description.JPG?raw=true" height = "70"/>
 
 
-With $\beta$ used to weight to adversarial loss.
+With $\beta$ used to weight the adversarial loss.

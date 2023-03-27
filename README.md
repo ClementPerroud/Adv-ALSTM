@@ -124,11 +124,11 @@ This Attentive LSTM use a Temporal Attention Layer that "summarize" the hidden s
 
 <img alt="Adv-ASLTM schema" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/adv_lstm.JPG?raw=true" />
 
-Following the Attentive LSTM, we get *$e^{s}$* the latent space representation of the input sequence.
+Following the Attentive LSTM, we get *$e_^{s}$* the latent space representation of the input sequence.
 
-We pass it through the classifier to get *$\hat{y}^{s}$* which it then used to calculate the first loss. 
+We pass it through the classifier to get *$\hat{y}_^{s}$* which it then used to calculate the first loss. 
 
-This first loss is derived with respect to *$e^{s}$*. It gives the "direction" to follow to maximize the loss by adding perturbations. We use this derivative to calculate $e_{adv}^{s}$, the Adversarial Example :
+This first loss is derived with respect to *$e_^{s}$*. It gives the "direction" to follow to maximize the loss by adding perturbations. We use this derivative to calculate $e_{adv}^{s}$, the Adversarial Example :
 
 
 <img alt="Formula e_adv" src="https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/e_adv.JPG?raw=true" height = "30"/>

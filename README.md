@@ -115,14 +115,14 @@ __init__(self, units, epsilon = 1E-3, beta =  5E-2, learning_rate = 1E-2, dropou
 
 ### Model description
 
-<img alt="Formula g_s gradient" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/adv_lstm.JPG?raw=true" height = "30" />
+<img alt="Attention Model schema" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/adv_lstm.JPG?raw=true" height = "30" />
 
 The **Adversarial Attentive LSTM** is based on an *Attentive LSTM* is used to generate a *latent space vector* that is used as a 1D-representation of a 2D-input sequence (here, the last *T* technical indicators of a given stock).
 
 This Attentive LSTM use a Temporal Attention Layer that "summarize" the hidden states of the LSTM following the temporal importance detected by the Neural Network. This layer keeps the last hidden states and append it to the attentive output.
 
 
-<img alt="Formula g_s gradient" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/adv_lstm.JPG?raw=true" height = "30" />
+<img alt="Adv-ASLTM schema" src = "https://github.com/ClementPerroud/Adv-ALSTM/blob/main/readme_images/adv_lstm.JPG?raw=true" height = "30" />
 
 Following the Attentive LSTM, we get *$e^s$* the latent space representation of the input sequence.
 
